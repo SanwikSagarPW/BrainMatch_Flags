@@ -1,0 +1,43 @@
+{
+  "gameMode": "textToImage",
+  "content": {
+    "science": {
+      "level1": {
+        "pairs": [
+          { "a": "India", "image": "images/11.png", "imageAlt": "flag of India" },
+          { "a": "USA", "image": "images/12.png", "imageAlt": "flag of USA" },
+          { "a": "Japan", "image": "images/13.png", "imageAlt": "flag of Japan" },
+          { "a": "Brazil", "image": "images/14.png", "imageAlt": "flag of Brazil" },
+          { "a": "France", "image": "images/15.png", "imageAlt": "flag of France" },
+          { "a": "China", "image": "images/16.png", "imageAlt": "flag of China" },
+          { "a": "Mexico", "image": "images/17.png", "imageAlt": "flag of Mexico" },
+          { "a": "U.K", "image": "images/18.png", "imageAlt": "flag of United Kingdom" }
+        ]
+      },
+      "level2": {
+        "pairs": [
+          { "a": "Egypt", "image": "images/21.png", "imageAlt": "flag of Egypt" },
+          { "a": "Kenya", "image": "images/22.png", "imageAlt": "flag of Kenya" },
+          { "a": "Ghana", "image": "images/23.png", "imageAlt": "flag of Ghana" },
+          { "a": "Morocco", "image": "images/24.png", "imageAlt": "flag of Morocco" },
+          { "a": "Sweden", "image": "images/25.png", "imageAlt": "flag of Sweden" },
+          { "a": "Algeria", "image": "images/26.png", "imageAlt": "flag of Algeria" },
+          { "a": "Sudan", "image": "images/27.png", "imageAlt": "flag of Sudan" },
+          { "a": "Nepal", "image": "images/28.png", "imageAlt": "flag of Nepal" }
+        ]
+      },
+      "level3": {
+        "pairs": [
+          { "a": "Poland", "image": "images/31.png", "imageAlt": "flag of Poland" },
+          { "a": "Ireland", "image": "images/32.png", "imageAlt": "flag of Ireland" },
+          { "a": "Ghana", "image": "images/33.png", "imageAlt": "flag of Ghana" },
+          { "a": "Togo", "image": "images/34.png", "imageAlt": "flag of Togo" },
+          { "a": "Benin", "image": "images/35.png", "imageAlt": "flag of Benin" },
+          { "a": "Mali", "image": "images/36.png", "imageAlt": "flag of Mali" },
+          { "a": "Niger", "image": "images/37.png", "imageAlt": "flag of Niger" },
+          { "a": "Laos", "image": "images/38.png", "imageAlt": "flag of Laos" }
+        ]
+      }
+    }
+  }
+}
