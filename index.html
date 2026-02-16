@@ -150,6 +150,15 @@
 
     <!-- Link to your JavaScript file -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
+    <!-- Analytics Integration (Non-invasive approach) -->
+    <!-- 1. Load Analytics Bridge Library (FIRST) -->
+    <script src="js-analytics-bridge/dist/analytics-bridge.js"></script>
+    
+    <!-- 2. Load Game Code (SECOND) -->
     <script src="script.js"></script>
+    
+    <!-- 3. Load Analytics Integration (LAST - hooks into game functions) -->
+    <script src="analytics-integration.js"></script>
 </body>
 </html>
