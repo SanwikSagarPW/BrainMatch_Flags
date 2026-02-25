@@ -10,11 +10,20 @@ class AnalyticsManager {
     this._isInitialized = false;
     this._gameId = '';
     this._sessionName = '';
+    this._sessionId = '';
     
     this._reportData = {
       gameId: '',
+      sessionId: '',
+      timestamp: '',
       name: '',
       xpEarnedTotal: 0,
+      xpEarned: 0,
+      xpTotal: 0,
+      bestXp: 0,
+      lastPlayedLevel: '',
+      highestLevelPlayed: '',
+      perLevelAnalytics: {},
       rawData: [],
       diagnostics: {
         levels: []
@@ -39,12 +48,21 @@ class AnalyticsManager {
   initialize(gameId, sessionName) {
     this._gameId = gameId;
     this._sessionName = sessionName;
+    this._sessionId = sessionName; // Use sessionName as sessionId
     
     this._reportData.gameId = gameId;
+    this._reportData.sessionId = sessionName;
+    this._reportData.timestamp = new Date().toISOString();
     this._reportData.name = sessionName;
     this._reportData.diagnostics.levels = [];
     this._reportData.rawData = [];
     this._reportData.xpEarnedTotal = 0;
+    this._reportData.xpEarned = 0;
+    this._reportData.xpTotal = 0;
+    this._reportData.bestXp = 0;
+    this._reportData.lastPlayedLevel = '';
+    this._reportData.highestLevelPlayed = '';
+    this._reportData.perLevelAnalytics = {};
     
     this._isInitialized = true;
     console.log(`[Analytics] Initialized for: ${gameId}`);
@@ -103,6 +121,53 @@ class AnalyticsManager {
       
       // Update global session totals
       this._reportData.xpEarnedTotal += xp;
+      this._reportData.xpEarned = this._reportData.xpEarnedTotal;
+      this._reportData.xpTotal = this._reportData.xpEarnedTotal;
+      this._reportData.bestXp = this._reportData.xpEarnedTotal;
+      
+      // Update per-level analytics
+      if (!this._reportData.perLevelAnalytics[levelId]) {
+        this._reportData.perLevelAnalytics[levelId] = {
+          attempts: 0,
+          wins: 0,
+          losses: 0,
+          totalTimeMs: 0,
+          bestTimeMs: Infinity,
+          totalXp: 0,
+          averageTimeMs: 0
+        };
+      }
+      
+      const stats = this._reportData.perLevelAnalytics[levelId];
+      stats.attempts += 1;
+      stats.wins += successful ? 1 : 0;
+      stats.losses += successful ? 0 : 1;
+      stats.totalTimeMs += timeTakenMs;
+      stats.totalXp += xp;
+      
+      if (timeTakenMs < stats.bestTimeMs) {
+        stats.bestTimeMs = timeTakenMs;
+      }
+      
+      stats.averageTimeMs = Math.round(stats.totalTimeMs / stats.attempts);
+      
+      // Update lastPlayedLevel
+      this._reportData.lastPlayedLevel = levelId;
+      
+      // Update highestLevelPlayed (assumes campaign_level_X format)
+      const levelMatch = levelId.match(/campaign_level_(\d+)/);
+      if (levelMatch) {
+        const levelNum = parseInt(levelMatch[1], 10);
+        const currentHighest = this._reportData.highestLevelPlayed.match(/campaign_level_(\d+)/);
+        const currentHighestNum = currentHighest ? parseInt(currentHighest[1], 10) : 0;
+        
+        if (levelNum > currentHighestNum) {
+          this._reportData.highestLevelPlayed = levelId;
+        }
+      } else if (!this._reportData.highestLevelPlayed) {
+        // For non-campaign levels, just set it if nothing is set
+        this._reportData.highestLevelPlayed = levelId;
+      }
     } else {
       console.warn(`[Analytics] End Level called for unknown level: ${levelId}`);
     }
@@ -148,17 +213,14 @@ class AnalyticsManager {
       console.error('[Analytics] Attempted to submit without initialization.');
       return;
     }
+    
+    // Update timestamp to current time
+    this._reportData.timestamp = new Date().toISOString();
+    
     // Build canonical payload
     const payload = JSON.parse(JSON.stringify(this._reportData));
-    // ensure canonical fields expected by hosts
-    if (!payload.sessionId) payload.sessionId = (Date.now() + '-' + Math.random().toString(36));
-    if (!payload.timestamp) payload.timestamp = new Date().toISOString();
-    // map existing fields to common names
-    payload.xpEarned = payload.xpEarned || payload.xpEarnedTotal || 0;
-    payload.xpTotal = payload.xpTotal || payload.xpEarnedTotal || 0;
-    payload.bestXp = payload.bestXp || payload.xpEarnedTotal || 0;
-
-    // Try delivery via several bridges, best-effort. If window is not present (test/node), just return payload
+    
+    // If window is not present (test/node), just return payload
     if (typeof window === 'undefined') {
       return payload;
     }
@@ -252,6 +314,12 @@ class AnalyticsManager {
    */
   reset() {
     this._reportData.xpEarnedTotal = 0;
+    this._reportData.xpEarned = 0;
+    this._reportData.xpTotal = 0;
+    this._reportData.bestXp = 0;
+    this._reportData.lastPlayedLevel = '';
+    this._reportData.highestLevelPlayed = '';
+    this._reportData.perLevelAnalytics = {};
     this._reportData.rawData = [];
     this._reportData.diagnostics.levels = [];
     console.log('[Analytics] Data reset');
