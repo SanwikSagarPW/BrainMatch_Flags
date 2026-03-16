@@ -73,6 +73,10 @@ function stopBackgroundMusic() {
 // --- Game Content ---
 let gameContent = null;
 
+// --- Progress System ---
+let gameManager = null;
+let highestLevelUnlocked = 1; // Default to level 1
+
 // Load game content from JSON file
 async function loadGameContent() {
   try {
@@ -81,11 +85,68 @@ async function loadGameContent() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     gameContent = await response.json();
+    
+    // Initialize progress system
+    await initializeProgressSystem();
+    
     // Enable start button once content is loaded
     startCampaignButton.disabled = false;
   } catch (error) {
     console.error("Error loading game content:", error);
     alert("Error loading game content. Please refresh the page.");
+  }
+}
+
+// Initialize Progress System
+async function initializeProgressSystem() {
+  try {
+    console.log('[Game] Initializing progress system...');
+    
+    // Create Progress Bridge (using backend payload mode)
+    const progressBridge = new ProgressBridge({
+      useProvidedPayload: true,
+      cacheDuration: 60000
+    });
+    
+    // Create Storage Manager
+    const storageManager = new StorageManager({
+      storageKey: 'brainMatchProgress',
+      useAsyncStorage: false
+    });
+    
+    // Create Validator
+    const validator = new Validator({
+      minLevel: 1,
+      maxLevel: 3  // We have 3 levels
+    });
+    
+    // Create Game Manager
+    gameManager = new GameManager({
+      progressBridge,
+      storageManager,
+      validator,
+      analyticsBridge: typeof AnalyticsBridge !== 'undefined' ? AnalyticsBridge : null,
+      config: CONFIG
+    });
+    
+    // Initialize (will load from local storage if available)
+    const result = await gameManager.initialize();
+    
+    if (result.success) {
+      highestLevelUnlocked = result.startLevel;
+      console.log(`[Game] Progress system initialized. Highest level: ${highestLevelUnlocked}`);
+      
+      // Update button text if player has progress
+      if (highestLevelUnlocked > 1) {
+        startCampaignButton.textContent = `Continue (Level ${highestLevelUnlocked})`;
+      }
+    } else {
+      console.warn('[Game] Progress system initialization failed, using default');
+      highestLevelUnlocked = 1;
+    }
+  } catch (error) {
+    console.error('[Game] Error initializing progress system:', error);
+    highestLevelUnlocked = 1;
   }
 }
 
@@ -110,6 +171,7 @@ function resetGameState() {
     reflexCard: null,
     reflexTimeoutId: null,
     isPaused: false,
+    levelStartTime: null, // Track when level started
   };
 }
 
@@ -433,6 +495,7 @@ function startGame(level) {
   startBackgroundMusic();
   gameState.gameMode = "campaign";
   gameState.currentCampaignLevel = level;
+  gameState.levelStartTime = Date.now(); // Track when level starts
   const levelData = gameContent.content.science[`level${level}`];
   startScreen.classList.add("hidden");
   winScreen.classList.add("hidden");
@@ -487,6 +550,23 @@ function handleCampaignWin() {
   const stars = calculateCampaignStars(level, gameState.turns);
   totalCampaignTurns += gameState.turns;
   totalCampaignXP += xp;
+  
+  // Save progress to the progress system
+  if (gameManager) {
+    gameManager.handleLevelComplete(level, {
+      xp: xp,
+      stars: stars,
+      turns: gameState.turns,
+      timeSpent: Date.now() - (gameState.levelStartTime || Date.now())
+    }).then(() => {
+      console.log(`[Game] Progress saved for level ${level}`);
+      // Update highest level unlocked for the UI
+      highestLevelUnlocked = gameManager.getStartLevel();
+    }).catch(error => {
+      console.error('[Game] Error saving progress:', error);
+    });
+  }
+  
   setTimeout(() => {
     // START: Added confetti
     if (typeof confetti === 'function') {
@@ -678,7 +758,7 @@ function showHowToPlay() {
   // Start game when "Got it!" is clicked
   startGameButton.onclick = () => {
     howToPlay.classList.add("hidden");
-    startGame(1);
+    startGame(highestLevelUnlocked); // Start at highest unlocked level
   };
 }
 
