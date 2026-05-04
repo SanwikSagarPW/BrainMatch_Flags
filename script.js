@@ -125,12 +125,20 @@ async function initializeProgressSystem() {
       progressBridge,
       storageManager,
       validator,
-      analyticsBridge: typeof AnalyticsBridge !== 'undefined' ? AnalyticsBridge : null,
+      analyticsBridge: typeof AnalyticsManager !== 'undefined' ? AnalyticsManager.getInstance() : null,
       config: CONFIG
     });
     
-    // Initialize (will load from local storage if available)
-    const result = await gameManager.initialize();
+    // Read window.userInfo injected by React Native WebView and remap keys
+    const userInfo = window.userInfo;
+    const backendPayload = (userInfo && userInfo.UserID && userInfo.GameID)
+      ? {
+          userId: userInfo.UserID,
+          gameId: userInfo.GameID,
+          highestLevelPlayed: typeof userInfo.highestLevelPlayed === 'number' ? userInfo.highestLevelPlayed : 1,
+        }
+      : null;
+    const result = await gameManager.initialize(backendPayload);
     
     if (result.success) {
       highestLevelUnlocked = result.startLevel;
