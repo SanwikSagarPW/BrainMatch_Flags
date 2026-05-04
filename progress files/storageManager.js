@@ -5,7 +5,7 @@
 
 class StorageManager {
   constructor(options = {}) {
-    this.storageKey = options.storageKey || 'gameProgress';
+    this.storageKey = options.storageKey || 'brainMatchFlags_progress';
     this.useAsyncStorage = options.useAsyncStorage || false;
     this.asyncStorage = options.asyncStorage || null;
   }

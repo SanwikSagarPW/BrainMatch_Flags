@@ -110,7 +110,7 @@ async function initializeProgressSystem() {
     
     // Create Storage Manager
     const storageManager = new StorageManager({
-      storageKey: 'brainMatchProgress',
+      storageKey: 'brainMatchFlags_progress',
       useAsyncStorage: false
     });
     
