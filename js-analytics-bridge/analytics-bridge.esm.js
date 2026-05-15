@@ -246,6 +246,45 @@ class AnalyticsManager {
   }
   
   /**
+   * Send an arbitrary payload through the delivery chain.
+   * Used by GameManager._sendAnalytics() for auto-save events.
+   * @param {Object} payload
+   */
+  sendEvent(payload) {
+    if (typeof window === 'undefined') return payload;
+
+    const LS_KEY = 'ignite_pending_sessions_jsplugin';
+    function savePending(p) {
+      try {
+        const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+        list.push(p);
+        localStorage.setItem(LS_KEY, JSON.stringify(list));
+      } catch (e) { /* ignore */ }
+    }
+
+    let sent = false;
+    try {
+      if (window.myJsAnalytics && typeof window.myJsAnalytics.trackGameSession === 'function') {
+        window.myJsAnalytics.trackGameSession(payload);
+        sent = true;
+      }
+    } catch (e) { /* continue */ }
+    try {
+      if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+        window.ReactNativeWebView.postMessage(JSON.stringify(payload));
+        sent = true;
+      }
+    } catch (e) { /* continue */ }
+    try {
+      const target = window.__GodotAnalyticsParentOrigin || '*';
+      window.parent.postMessage(payload, target);
+      sent = true;
+    } catch (e) { /* continue */ }
+
+    if (!sent) savePending(payload);
+  }
+
+  /**
    * Get current report data (for debugging)
    * @returns {Object} Current analytics data
    */
