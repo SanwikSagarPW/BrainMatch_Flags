@@ -23,7 +23,7 @@ const CONFIG = {
 
   // Storage Configuration
   storage: {
-    storageKey: 'gameProgress',
+    storageKey: 'brainMatchFlags_progress',
     useAsyncStorage: false, // Set to true for React Native
   },
 
