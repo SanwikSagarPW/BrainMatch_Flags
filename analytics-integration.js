@@ -339,6 +339,9 @@
                 analytics.addRawMetric('total_campaign_turns', totalTurns.toString());
                 analytics.addRawMetric('final_stars', finalStars.toString());
 
+                // Override xpEarnedTotal so the host app receives the exact in-game score for high score comparison
+                analytics._reportData.xpEarnedTotal = totalXP;
+
                 // Single report for the entire 3-level campaign
                 analytics.submitReport();
                 console.log(`[Analytics] Campaign complete — final report submitted. Total XP: ${totalXP}, Stars: ${finalStars}`);
