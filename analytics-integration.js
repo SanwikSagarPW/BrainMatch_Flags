@@ -37,8 +37,8 @@
     // =====================================================
 
     function getCurrentLevelId() {
-        if (currentGameMode === 'campaign' && window.gameState && window.gameState.currentCampaignLevel) {
-            return `campaign_level_${window.gameState.currentCampaignLevel}`;
+        if (currentGameMode === 'campaign' && gameState && gameState.currentCampaignLevel) {
+            return `campaign_level_${gameState.currentCampaignLevel}`;
         } else if (currentGameMode === 'reflex') {
             return 'reflex_mode';
         }
@@ -47,8 +47,8 @@
 
     function safeGetGameState(property, defaultValue = 0) {
         try {
-            return window.gameState && window.gameState[property] !== undefined 
-                ? window.gameState[property] 
+            return gameState && gameState[property] !== undefined 
+                ? gameState[property] 
                 : defaultValue;
         } catch (error) {
             console.error(`[Analytics] Error accessing gameState.${property}:`, error);
@@ -112,7 +112,7 @@
         window.handleCorrectMatch = function() {
             try {
                 // Capture state BEFORE calling original function
-                const flippedCards = window.gameState?.flippedCards || [];
+                const flippedCards = gameState?.flippedCards || [];
                 if (flippedCards.length === 2) {
                     const [first, second] = flippedCards;
                     const question = first.dataset?.value || 'Unknown';
@@ -152,7 +152,7 @@
         window.handleIncorrectMatch = function() {
             try {
                 // Capture state BEFORE calling original function
-                const flippedCards = window.gameState?.flippedCards || [];
+                const flippedCards = gameState?.flippedCards || [];
                 if (flippedCards.length === 2) {
                     const [first, second] = flippedCards;
                     const question = first.dataset?.value || 'Unknown';
@@ -281,7 +281,7 @@
 
             // Wrap the timer interval to detect failures
             try {
-                const originalInterval = window.gameState?.timerId;
+                const originalInterval = gameState?.timerId;
                 if (originalInterval) {
                     // Store original clearInterval
                     const originalClearInterval = window.clearInterval;
